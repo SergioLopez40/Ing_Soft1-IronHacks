@@ -1,91 +1,51 @@
+var map;
+var name1 = 'STN';
 
-(function () {
-    document.getElementById("botones").getElementById("best").addEventListener("click", function () {
-        alert("Graph cheaper");
-    });
-})();
-
-(function () {
-    document.getElementById("security").addEventListener("click", function () {
-        alert("Graph Safety");
-    });
-})();
-
-(function () {
-    document.getElementById("best").addEventListener("click", function () {
-        alert("Graph Cheaper safety");
-    });
-})();
-
-var googleMap;
 function myMap() {
-    var map = document.getElementById("googleMap")
+    var map0 = document.getElementById("map");
     var mapProp= {
         center: {lat:40.729131,lng:-73.996546},
         zoom:12
     };
-    googleMap=new google.maps.Map(map,mapProp);
+    map=new google.maps.Map(map0,mapProp);
     var marker= new google.maps.Marker({
-        position:googleMap.center,
-        map:googleMap
+        position:map.center,
+        map:map,
+        label: name1,
     });
+    markers();
 }
 
-(function best() {
-    document.getElementById("best").addEventListener("click", function () {
-        alert("Hi! :)");
-    });
-})();
+function updateMarkers(map, array){
+    for(var i=0;i<array.length;i++){
+        array[i].setMap(map);
+    }
+}
 
-$(document).ready(function(){
-    document.getElementById("price").onclick = function () {
-        insertDataRent();
-        setMapOnAll(googleMap,rentmarkers);
-    };
+var schoolSecurity = "https://data.cityofnewyork.us/api/views/qybk-bjjc/rows.json?accessType=DOWNLOAD";
+var rentmarkers = [];
+var showrents = false;
+
+$("#price").click(function(){
+    if(showrents){
+        updateMarkers(null,rentmarkers);
+    }else{
+        updateMarkers(map,rentmarkers);
+    }
+    showrents = !showrents;
 });
 
-(function () {
-    document.getElementById("security").addEventListener("click", function () {
-        alert("Hi! :)");
-    });
-})();
-
-var rent="https://data.cityofnewyork.us/api/views/hg8x-zxpr/rows.json?accessType=DOWNLOAD";
-var rentdata;
-var rentmarkers=[];
-loadDataSetsData();
-
-function loadDataSetsData(){
-    $.ajax({
-      url: rent,
-      type:"GET"  
-    }).done(function(data){
-     rentdata = data.data;
-    });
-}
-
-function insertDataRent(){
-    for(var i=0; i<rentdata.length; i++){
-        var lat = rentdata[i][23];
-        var lng = rentdata[i][24];
-        if(lat !== null && lng !== null){
-            rentmarkers.push(addmarkeraux(lat,lng, "casa"));
+function markers(){
+    var data=$.get("https://data.cityofnewyork.us/api/views/hg8x-zxpr/rows.json")
+    .done(function(){
+        for(var i=0; i<(data.responseJSON.data).length; i++){
+            var location = new google.maps.LatLng(data.responseJSON.data[i][23],data.responseJSON.data[i][24]);
+            var marker = new google.maps.Marker({
+                position: location,
+                map:map,
+            });
+            rentmarkers.push(marker);
+            marker.setMap(null);
         }
-    }
-}
-
-function setMapOnAll(map,list){
-    for(var i=0;i<list.length;i++){
-        list[i].setMap(map);
-    }
-}
-
-function getDataFromURL(URL){
-    var data = $.get(URL, function(){
-        console.log(URL);
-    }).done(function(){
-        console.log(data);
-    }).fail(function(error){
-        console.error(error);
-    })
+    });
 }
